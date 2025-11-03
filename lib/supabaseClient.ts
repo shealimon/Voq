@@ -12,8 +12,19 @@ export const supabaseBrowser = () => {
 
 export const supabaseServer = () => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
-  if (!supabaseUrl || !serviceKey) {
-    throw new Error("Missing Supabase server ENV vars SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_URL");
+  if (!supabaseUrl) {
+    throw new Error(
+      "Missing NEXT_PUBLIC_SUPABASE_URL environment variable. " +
+      "Please set this in your production environment variables."
+    );
+  }
+  if (!serviceKey) {
+    throw new Error(
+      "Missing SUPABASE_SERVICE_ROLE_KEY environment variable. " +
+      "This is required for server-side operations like user profile creation. " +
+      "Please set this in your production environment variables. " +
+      "You can find it in your Supabase Dashboard under Settings > API > service_role key (secret)"
+    );
   }
   return createClient(supabaseUrl, serviceKey);
 };

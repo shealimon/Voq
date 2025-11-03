@@ -46,30 +46,78 @@ export default function SignupPage() {
           data: { firstName, lastName, companyName }
         }
       });
-      if (signUpError) throw signUpError;
-      const userId = data?.user?.id;
-      if (!userId) throw new Error("Signup created session but no user id returned.");
+      
+      if (signUpError) {
+        // Handle specific Supabase errors
+        if (signUpError.message.includes("already registered") || signUpError.message.includes("already exists")) {
+          setError("This email is already registered. Please sign in or use a different email.");
+          return;
+        }
+        throw signUpError;
+      }
 
+      const userId = data?.user?.id;
+      // In production, if email confirmation is required, user might be null initially
+      // but Supabase still returns the user object with an ID
+      if (!userId) {
+        // If no user returned, check if it's because email confirmation is required
+        if (data?.user === null) {
+          setSuccess("Please check your email to verify your account before signing in.");
+          return;
+        }
+        throw new Error("Signup failed: No user ID returned.");
+      }
+
+      // Try to create profile - this may fail if email confirmation is required
+      // but that's okay, it will be created when user verifies email via callback
       const resp = await fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, firstName, lastName, companyName, role: "admin" }),
       });
 
+      const body = await resp.json().catch(() => ({}));
+
       if (resp.status === 409) {
-        setSuccess("Verification email sent. Please verify your email, then sign in.");
+        // User exists but not ready (email not confirmed)
+        setSuccess("Verification email sent. Please check your email to verify your account, then sign in.");
+        setFirstName(""); setLastName(""); setEmail(""); setCompanyName(""); setPassword(""); setConfirmPassword("");
         return;
       }
 
-      if (!resp.ok) {
-        const body = await resp.json().catch(() => ({}));
-        throw new Error(body?.error || "Failed to save profile");
+      if (resp.status === 400) {
+        // Missing required fields or validation error
+        throw new Error(body?.error || "Invalid signup data. Please check all fields.");
       }
 
+      if (!resp.ok) {
+        // Other errors - might be duplicate profile, database issue, etc.
+        const errorMsg = body?.error || "Failed to create account. Please try again.";
+        
+        // If profile already exists, that's actually okay - user just needs to verify email
+        if (errorMsg.includes("duplicate") || errorMsg.includes("already exists")) {
+          setSuccess("Account created! Please check your email to verify your account.");
+          setFirstName(""); setLastName(""); setEmail(""); setCompanyName(""); setPassword(""); setConfirmPassword("");
+          return;
+        }
+        
+        throw new Error(errorMsg);
+      }
+
+      // Success - profile created
       setSuccess("Account created! Please check your email to verify your account.");
       setFirstName(""); setLastName(""); setEmail(""); setCompanyName(""); setPassword(""); setConfirmPassword("");
     } catch (err: any) {
-      setError(err.message || "Unexpected error during signup");
+      // More user-friendly error messages
+      let errorMessage = err.message || "Unexpected error during signup";
+      
+      if (errorMessage.includes("Email rate limit")) {
+        errorMessage = "Too many signup attempts. Please wait a few minutes and try again.";
+      } else if (errorMessage.includes("Password")) {
+        errorMessage = "Password does not meet requirements. Please use at least 8 characters.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -87,14 +135,14 @@ export default function SignupPage() {
           </Link>
         </div>
         
-        <h1 className="text-3xl md:text-4xl font-bold text-center text-blue-900 dark:text-blue-200">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-blue-900 dark:text-blue-200 px-2">
           Create your free account on VOQ
         </h1>
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-2">
-          Get unlimited access and don’t pay a cent until you run payroll.
+        <p className="text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2 px-2">
+          Get unlimited access and don't pay a cent until you run payroll.
         </p>
 
-        <div className="mt-8 bg-white dark:bg-zinc-900 rounded-2xl shadow p-6 md:p-8">
+        <div className="mt-6 sm:mt-8 bg-white dark:bg-zinc-900 rounded-2xl shadow p-4 sm:p-6 md:p-8">
           <button
             type="button"
             className="w-full inline-flex items-center justify-center gap-2 rounded-full border border-gray-300 dark:border-zinc-700 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
@@ -188,15 +236,15 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <div className="mt-10">
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="mt-8 sm:mt-10">
+          <p className="text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400 px-2">
             Trusted by more than 400,000 businesses and their teams.
           </p>
-          <div className="mt-4 flex justify-center gap-8 opacity-80">
-            <div className="h-6 w-24 bg-gray-300 rounded" />
-            <div className="h-6 w-24 bg-gray-300 rounded" />
-            <div className="h-6 w-24 bg-gray-300 rounded" />
-            <div className="h-6 w-24 bg-gray-300 rounded" />
+          <div className="mt-4 flex flex-wrap justify-center gap-4 sm:gap-8 opacity-80">
+            <div className="h-6 w-20 sm:w-24 bg-gray-300 rounded" />
+            <div className="h-6 w-20 sm:w-24 bg-gray-300 rounded" />
+            <div className="h-6 w-20 sm:w-24 bg-gray-300 rounded" />
+            <div className="h-6 w-20 sm:w-24 bg-gray-300 rounded" />
           </div>
         </div>
       </div>

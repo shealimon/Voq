@@ -64,17 +64,17 @@ export default function Dashboard() {
       <DashboardNav activePage="home" />
 
       {/* Main Content Area */}
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">Hey, Joyce 👋</h1>
+      <div className="p-4 sm:p-6">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">Hey, Joyce 👋</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Payments Tracker Card */}
-            <div className="bg-white border border-gray-200 rounded-md p-6">
-              <div className="grid grid-cols-2 gap-6">
+            <div className="bg-white border border-gray-200 rounded-md p-4 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Payments due</p>
                   <p className="text-2xl font-semibold text-gray-900">$0</p>
@@ -92,7 +92,7 @@ export default function Dashboard() {
             </div>
 
             {/* Processing Payments Details Card */}
-            <div className="bg-red-50 border border-red-200 rounded-md p-6">
+            <div className="bg-red-50 border border-red-200 rounded-md p-4 sm:p-6">
               <div className="flex items-start gap-3 mb-4">
                 <ExclamationIcon />
                 <div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
             </div>
 
             {/* Payroll Requests Card */}
-            <div className="bg-white border border-gray-200 rounded-md p-6">
+            <div className="bg-white border border-gray-200 rounded-md p-4 sm:p-6">
               <p className="text-sm text-gray-900 mb-4">Showing requests for payroll cycle Jun 1st - 30th, 2025</p>
               <div className="flex items-start gap-3 mb-4">
                 <InfoIcon />
@@ -125,7 +125,7 @@ export default function Dashboard() {
             </div>
 
             {/* Payment History Card */}
-            <div className="bg-white border border-gray-200 rounded-md p-6">
+            <div className="bg-white border border-gray-200 rounded-md p-4 sm:p-6">
               <div className="flex items-start gap-3">
                 <InfoIcon />
                 <p className="text-sm text-gray-600">No payments have been completed yet</p>
@@ -134,9 +134,9 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* For You Today Card */}
-            <div className="bg-white border border-gray-200 rounded-md p-6">
+            <div className="bg-white border border-gray-200 rounded-md p-4 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">For you today</h2>
               <p className="text-sm text-gray-600 mb-6">To-dos that require your attention</p>
               
@@ -186,7 +186,7 @@ export default function Dashboard() {
             </div>
 
             {/* Maximize Your VOQ Experience Card */}
-            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-800 rounded-md p-6 text-white">
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-800 rounded-md p-4 sm:p-6 text-white">
               <div className="flex items-center gap-3 mb-4">
                 <TeamIcon />
               </div>
@@ -198,7 +198,7 @@ export default function Dashboard() {
             </div>
 
             {/* Cycles Tracker Card */}
-            <div className="bg-white border border-gray-200 rounded-md p-6">
+            <div className="bg-white border border-gray-200 rounded-md p-4 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Cycles Tracker</h2>
                 <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-semibold">NEW</span>
@@ -255,14 +255,14 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom-left Warning Icon */}
-      <div className="fixed bottom-6 left-6">
-        <button className="text-gray-600">
+      <div className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-10">
+        <button className="text-gray-600 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50">
           <WarningIcon />
         </button>
       </div>
 
       {/* Bottom-right Refresh Button */}
-      <button className="fixed bottom-6 right-6 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800">
+      <button className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-lg hover:bg-gray-800 z-10">
         <RefreshIcon />
       </button>
     </div>

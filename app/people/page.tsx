@@ -196,18 +196,18 @@ export default function PeoplePage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900">People</h1>
-          <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
+      <div className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-900">People</h1>
+          <button className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition w-full sm:w-auto justify-center">
             <PlusIcon />
             <span>Add people</span>
           </button>
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-          <div className="flex items-center gap-3 flex-wrap">
+        <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 mb-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50">
               <SearchIcon />
             </button>
@@ -256,8 +256,8 @@ export default function PeoplePage() {
         </div>
 
         {/* People Table */}
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden overflow-x-auto">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">

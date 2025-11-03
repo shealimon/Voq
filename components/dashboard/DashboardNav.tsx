@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabaseClient";
 
 // Icon Components - Simple Gray Icons (no color in icons themselves, color applied by parent)
@@ -176,11 +177,18 @@ interface DashboardNavProps {
 
 export default function DashboardNav({ activePage = 'home' }: DashboardNavProps) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [userRole, setUserRole] = useState<string>("admin"); // Default to admin for now
   const menuRef = useRef<HTMLDivElement>(null);
   const moreMenuRef = useRef<HTMLDivElement>(null);
+  
+  const handleNavigation = (href: string) => {
+    startTransition(() => {
+      router.push(href);
+    });
+  };
 
   // Fetch user role on component mount
   useEffect(() => {
@@ -282,21 +290,23 @@ export default function DashboardNav({ activePage = 'home' }: DashboardNavProps)
 
   const activeLabel = getActiveItem();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <nav className="bg-white border-b border-gray-200 px-4 py-3">
+    <nav className="bg-white border-b border-gray-200 px-3 sm:px-4 py-2 sm:py-3">
       <div className="flex items-center justify-between">
         {/* Left Side */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center font-bold text-sm">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-black text-white rounded flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0">
               d.
             </div>
-            <div>
-              <div className="flex items-center gap-1 text-sm font-medium">
-                VOQ-demo
+            <div className="min-w-0">
+              <div className="flex items-center gap-1 text-xs sm:text-sm font-medium">
+                <span className="truncate">VOQ-demo</span>
                 <ChevronDownIcon />
               </div>
-              <div className="text-xs text-gray-500">All groups</div>
+              <div className="text-xs text-gray-500 hidden sm:block">All groups</div>
             </div>
           </div>
         </div>
@@ -344,8 +354,12 @@ export default function DashboardNav({ activePage = 'home' }: DashboardNavProps)
             return (
               <button
                 key={item.label}
-                onClick={() => router.push(item.href)}
-                className={`flex items-center gap-2 whitespace-nowrap ${isActive ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNavigation(item.href);
+                }}
+                disabled={isPending}
+                className={`flex items-center gap-2 whitespace-nowrap cursor-pointer ${isActive ? 'text-gray-900' : 'text-gray-700 hover:text-gray-900'} ${isPending ? 'opacity-50' : ''}`}
               >
                 <div className="w-5 h-5">
                   <item.icon />
@@ -356,11 +370,28 @@ export default function DashboardNav({ activePage = 'home' }: DashboardNavProps)
           })}
         </div>
 
+        {/* Mobile Menu Button */}
+        <div className="md:hidden">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-gray-600 hover:text-gray-900"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              {mobileMenuOpen ? (
+                <path d="M6 18L18 6M6 6l12 12"/>
+              ) : (
+                <path d="M4 6h16M4 12h16M4 18h16"/>
+              )}
+            </svg>
+          </button>
+        </div>
+
         {/* Right Side */}
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3 lg:gap-4">
           <button className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900">
             <SearchIcon />
-            <span className="hidden md:inline">K</span>
+            <span className="hidden lg:inline">K</span>
           </button>
           <button className="relative text-gray-600 hover:text-gray-900">
             <SettingsIcon />
@@ -399,6 +430,62 @@ export default function DashboardNav({ activePage = 'home' }: DashboardNavProps)
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 pt-3 mt-3">
+          <div className="flex flex-col gap-2 mb-3">
+            {topMenuItems.map((item) => {
+              const isActive = item.label === activeLabel;
+              return (
+                <button
+                  key={item.label}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMobileMenuOpen(false);
+                    handleNavigation(item.href);
+                  }}
+                  disabled={isPending}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer w-full text-left ${
+                    isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+                  } ${isPending ? 'opacity-50' : ''}`}
+                >
+                  <div className="w-5 h-5">
+                    <item.icon />
+                  </div>
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                JO
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md"
+              >
+                <LogoutIcon />
+                <span>Logout</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="p-2 text-gray-600 hover:text-gray-900">
+                <SearchIcon />
+              </button>
+              <button className="relative p-2 text-gray-600 hover:text-gray-900">
+                <BellIcon />
+                <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+              </button>
+              <button className="p-2 text-gray-600 hover:text-gray-900">
+                <SettingsIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

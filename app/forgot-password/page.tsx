@@ -25,7 +25,9 @@ export default function ForgotPasswordPage() {
       const supabase = supabaseBrowser();
       
       // Get the full URL for redirect - Supabase requires absolute URLs
-      const redirectUrl = `${window.location.origin}/reset-password`;
+      // Using /auth/callback for consistency with email verification flow
+      // Supabase will add the recovery token to the hash fragment
+      const redirectUrl = `${window.location.origin}/auth/callback`;
       
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,

@@ -2,7 +2,30 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### Environment Variables
+
+Before running the application, you need to set up your Supabase environment variables. Create a `.env.local` file in the root directory with the following:
+
+```env
+# Supabase Configuration
+# Get these values from your Supabase Dashboard: https://app.supabase.com/project/_/settings/api
+
+# Public URL - Required for both client and server
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+
+# Anon/Public Key - Required for client-side operations (browser)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Service Role Key - Required for server-side operations (API routes)
+# ⚠️ IMPORTANT: This is a secret key. Never expose it in client-side code!
+# This key bypasses Row Level Security (RLS) and should only be used server-side.
+# Find it in Supabase Dashboard > Settings > API > service_role key (secret)
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+```
+
+**For Production:** Make sure to add all three environment variables to your hosting platform (Vercel, Netlify, etc.). The `SUPABASE_SERVICE_ROLE_KEY` is especially important for the signup functionality to work.
+
+### Running the Development Server
 
 ```bash
 npm run dev

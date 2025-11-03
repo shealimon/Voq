@@ -9,7 +9,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const supabase = supabaseServer();
+    let supabase;
+    try {
+      supabase = supabaseServer();
+    } catch (envError: any) {
+      // Catch environment variable errors and return a helpful error
+      console.error("Environment variable error:", envError.message);
+      return NextResponse.json(
+        { 
+          error: "Server configuration error. Please contact support.",
+          details: "Missing required environment variables. This is a server configuration issue."
+        },
+        { status: 500 }
+      );
+    }
 
     // Ensure the auth user exists (helps avoid FK violations when email not verified/created yet)
     const { data: userLookup, error: userLookupError } = await supabase.auth.admin.getUserById(userId);
@@ -41,6 +54,22 @@ export async function POST(req: Request) {
       companyId = company.id;
     }
 
+    // Check if profile already exists (idempotency)
+    const { data: existingProfile } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existingProfile) {
+      // Profile already exists, return success (user might be re-verifying email)
+      return NextResponse.json({ 
+        companyId, 
+        profileId: existingProfile.id,
+        message: "Profile already exists"
+      }, { status: 200 });
+    }
+
     // Create profile
     const { data: profile, error: profileError } = await supabase
       .from("user_profiles")
@@ -48,8 +77,33 @@ export async function POST(req: Request) {
       .select("id")
       .single();
 
-    if (profileError || !profile) {
-      return NextResponse.json({ error: profileError?.message || "Failed to create profile" }, { status: 500 });
+    if (profileError) {
+      // Handle duplicate key errors gracefully
+      if (profileError.code === "23505" || profileError.message.includes("duplicate") || profileError.message.includes("unique constraint")) {
+        // Profile was created in a race condition, fetch it
+        const { data: raceProfile } = await supabase
+          .from("user_profiles")
+          .select("id")
+          .eq("user_id", userId)
+          .maybeSingle();
+        
+        if (raceProfile) {
+          return NextResponse.json({ 
+            companyId, 
+            profileId: raceProfile.id,
+            message: "Profile already exists"
+          }, { status: 200 });
+        }
+      }
+      
+      return NextResponse.json({ 
+        error: profileError.message || "Failed to create profile",
+        details: profileError
+      }, { status: 500 });
+    }
+
+    if (!profile) {
+      return NextResponse.json({ error: "Failed to create profile: No data returned" }, { status: 500 });
     }
 
     return NextResponse.json({ companyId, profileId: profile.id }, { status: 201 });
